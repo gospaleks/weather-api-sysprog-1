@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace weather_api_sysprog_1.Core.Entities
+﻿namespace weather_api_sysprog_1.Core.Entities
 {
     public class WeatherForecast
     {

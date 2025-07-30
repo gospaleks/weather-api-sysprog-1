@@ -59,15 +59,15 @@ namespace weather_api_sysprog_1.Web
             if (_cache.TryGet(query, out var cached))
             {
                 Logger.Log("Slanje keširanog odgovora.");
-                RespondWithJson(context, cached);
+                string json = JsonSerializer.Serialize(cached);
+                RespondWithJson(context, json);
                 return;
             }
 
             try
             {
                 var forecast = _weatherService.GetWeather(query);
-
-                // TODO: dodati u kes
+                _cache.Add(query, forecast);
 
                 Logger.Log("Novi odgovor dobijen i keširan.");
                 string json = JsonSerializer.Serialize(forecast);

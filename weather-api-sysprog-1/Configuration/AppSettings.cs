@@ -6,6 +6,8 @@
         
         public int Port { get; } = 8080;
 
+        public int MaxCacheSize { get; } = 2;
+
         public string GetListenerPrefix() => $"http://localhost:{Port}/";
 
         public string GetApiUrl(string query) =>
