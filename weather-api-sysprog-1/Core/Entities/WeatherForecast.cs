@@ -15,7 +15,13 @@
         public double CurrentWindSpeedKph { get; set; } 
         public double CurrentPressureMb { get; set; }
 
+        // Kvalitet vazduha
+        public AirQuality? AirQuality { get; set; }
+
         // Prognoza
         public List<ForecastDay> ForecastDays { get; set; } = new List<ForecastDay>();
+
+        // Upozorenja
+        public List<Alert>? Alerts { get; set; }
     }
 }

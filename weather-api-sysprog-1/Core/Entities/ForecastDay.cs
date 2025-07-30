@@ -14,5 +14,8 @@
         public int DailyChanceOfSnow { get; set; }
         public double Uv { get; set; }
         public string Text { get; set; } = string.Empty;
+
+        // Kvalitet vazduha
+        public AirQuality? AirQuality { get; set; }
     }
 }

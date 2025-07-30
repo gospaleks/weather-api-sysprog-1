@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using weather_api_sysprog_1.Core.Entities;
+using weather_api_sysprog_1.Infrastructure.Extensions;
 
 namespace weather_api_sysprog_1.Infrastructure.Mappers
 {
@@ -8,35 +9,76 @@ namespace weather_api_sysprog_1.Infrastructure.Mappers
         public static WeatherForecast MapFromJson(string json)
         {
             using JsonDocument doc = JsonDocument.Parse(json);
+            var root = doc.RootElement;
+            var location = root.GetProperty("location");
+            var current = root.GetProperty("current");
 
             return new WeatherForecast
             {
-                LocationName = doc.RootElement.GetProperty("location").GetProperty("name").GetString() ?? string.Empty,
-                LocationRegion = doc.RootElement.GetProperty("location").GetProperty("region").GetString() ?? string.Empty,
-                LocationCountry = doc.RootElement.GetProperty("location").GetProperty("country").GetString() ?? string.Empty,
-                CurrentLastUpdated = doc.RootElement.GetProperty("current").GetProperty("last_updated").GetString() ?? string.Empty,
-                CurrentTempC = doc.RootElement.GetProperty("current").GetProperty("temp_c").GetDouble(),
-                CurrentFeelsLikeC = doc.RootElement.GetProperty("current").GetProperty("feelslike_c").GetDouble(),
-                CurrentConditionText = doc.RootElement.GetProperty("current").GetProperty("condition").GetProperty("text").GetString() ?? string.Empty,
-                CurrentWindSpeedKph = doc.RootElement.GetProperty("current").GetProperty("wind_kph").GetDouble(),
-                CurrentPressureMb = doc.RootElement.GetProperty("current").GetProperty("pressure_mb").GetDouble(),
-                
-                ForecastDays = doc.RootElement.GetProperty("forecast").GetProperty("forecastday").EnumerateArray()
+                LocationName = location.GetStringSafe("name"),
+                LocationRegion = location.GetStringSafe("region"),
+                LocationCountry = location.GetStringSafe("country"),
+                CurrentLastUpdated = current.GetStringSafe("last_updated"),
+                CurrentTempC = current.GetDoubleSafe("temp_c"),
+                CurrentFeelsLikeC = current.GetDoubleSafe("feelslike_c"),
+                CurrentConditionText = current.GetProperty("condition").GetStringSafe("text"),
+                CurrentWindSpeedKph = current.GetDoubleSafe("wind_kph"),
+                CurrentPressureMb = current.GetDoubleSafe("pressure_mb"),
+                AirQuality = current.TryGetProperty("air_quality", out var aq) ? MapAirQuality(aq) : null,
+                ForecastDays = root.GetProperty("forecast").GetProperty("forecastday")
+                    .EnumerateArray()
                     .Select(f => new ForecastDay
                     {
                         Date = DateOnly.FromDateTime(f.GetProperty("date").GetDateTime()),
-                        MaxtempC = f.GetProperty("day").GetProperty("maxtemp_c").GetDouble(),
-                        MintempC = f.GetProperty("day").GetProperty("mintemp_c").GetDouble(),
-                        AvgtempC = f.GetProperty("day").GetProperty("avgtemp_c").GetDouble(),
-                        MaxwindKph = f.GetProperty("day").GetProperty("maxwind_kph").GetDouble(),
-                        Avghumidity = f.GetProperty("day").GetProperty("avghumidity").GetInt32(),
-                        DailyWillItRain = f.GetProperty("day").GetProperty("daily_will_it_rain").GetInt32() != 0,
-                        DailyChanceOfRain = f.GetProperty("day").GetProperty("daily_chance_of_rain").GetInt32(),
-                        DailyWillItSnow = f.GetProperty("day").GetProperty("daily_will_it_snow").GetInt32() != 0,
-                        DailyChanceOfSnow = f.GetProperty("day").GetProperty("daily_chance_of_snow").GetInt32(),
-                        Uv = f.GetProperty("day").GetProperty("uv").GetDouble(),
-                        Text = f.GetProperty("day").GetProperty("condition").GetProperty("text").GetString() ?? string.Empty
-                    }).ToList()
+                        MaxtempC = f.GetProperty("day").GetDoubleSafe("maxtemp_c"),
+                        MintempC = f.GetProperty("day").GetDoubleSafe("mintemp_c"),
+                        AvgtempC = f.GetProperty("day").GetDoubleSafe("avgtemp_c"),
+                        MaxwindKph = f.GetProperty("day").GetDoubleSafe("maxwind_kph"),
+                        Avghumidity = f.GetProperty("day").GetIntSafe("avghumidity"),
+                        DailyWillItRain = f.GetProperty("day").GetBoolFromInt("daily_will_it_rain"),
+                        DailyChanceOfRain = f.GetProperty("day").GetIntSafe("daily_chance_of_rain"),
+                        DailyWillItSnow = f.GetProperty("day").GetBoolFromInt("daily_will_it_snow"),
+                        DailyChanceOfSnow = f.GetProperty("day").GetIntSafe("daily_chance_of_snow"),
+                        Uv = f.GetProperty("day").GetDoubleSafe("uv"),
+                        Text = f.GetProperty("day").GetProperty("condition").GetStringSafe("text"),
+                        AirQuality = f.GetProperty("day").TryGetProperty("air_quality", out var dayAq) ? MapAirQuality(dayAq) : null
+                    })
+                    .ToList(),
+                Alerts = root.TryGetProperty("alerts", out var alerts) ? 
+                       alerts.GetProperty("alert").EnumerateArray().Select(MapAlert).ToList()
+                       : null
+            };
+        }
+
+        private static AirQuality? MapAirQuality(JsonElement element)
+        {
+            if (!element.ValueKind.Equals(JsonValueKind.Object)) return null;
+
+            return new AirQuality
+            {
+                CO = element.GetDoubleSafe("co"),
+                NO2 = element.GetDoubleSafe("no2"),
+                O3 = element.GetDoubleSafe("o3"),
+                SO2 = element.GetDoubleSafe("so2"),
+                PM10 = element.GetDoubleSafe("pm10"),
+                PM2_5 = element.GetDoubleSafe("pm2_5"),
+                USEPAIndex = element.GetIntSafe("us-epa-index"),
+                GBDEFRAIndex = element.GetIntSafe("gb-defra-index")
+            };
+        }
+
+        private static Alert MapAlert(JsonElement element)
+        {
+            if (!element.ValueKind.Equals(JsonValueKind.Object)) return null;
+            
+            return new Alert
+            {
+                Headline = element.GetStringSafe("headline"),
+                Description = element.GetStringSafe("description"),
+                Severity = element.GetStringSafe("severity"),
+                Effective = element.GetDateTime("effective"),
+                Expires = element.GetDateTime("expires"),
+                Areas = element.GetStringSafe("areas")
             };
         }
     }
