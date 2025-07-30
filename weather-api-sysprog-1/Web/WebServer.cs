@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using weather_api_sysprog_1.Configuration;
 using weather_api_sysprog_1.Core.Interfaces;
 using weather_api_sysprog_1.Infrastructure.Cache;
@@ -49,6 +50,8 @@ namespace weather_api_sysprog_1.Web
 
             string query = context.Request.Url?.Query ?? string.Empty;
 
+            // TODO: Napravi bolje response-e za greske i nevalidne zahteve sa status kodovima
+
             if (string.IsNullOrEmpty(query))
             {
                 RespondWithText(context, "Greška: Niste prosledili upit.");
@@ -59,8 +62,7 @@ namespace weather_api_sysprog_1.Web
             if (_cache.TryGet(query, out var cached))
             {
                 Logger.Log("Slanje keširanog odgovora.");
-                string json = JsonSerializer.Serialize(cached);
-                RespondWithJson(context, json);
+                RespondWithJson(context, cached);
                 return;
             }
 
@@ -70,8 +72,7 @@ namespace weather_api_sysprog_1.Web
                 _cache.Add(query, forecast);
 
                 Logger.Log("Novi odgovor dobijen i keširan.");
-                string json = JsonSerializer.Serialize(forecast);
-                RespondWithJson(context, json);
+                RespondWithJson(context, forecast);
             }
             catch (Exception ex)
             {
@@ -80,9 +81,15 @@ namespace weather_api_sysprog_1.Web
             }
         }
 
-        private void RespondWithJson(HttpListenerContext context, string content)
+        private void RespondWithJson(HttpListenerContext context, object? content)
         {
-            byte[] buffer = System.Text.Encoding.UTF8.GetBytes(content);
+            var options = new JsonSerializerOptions
+            {
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+                WriteIndented = true
+            };
+
+            byte[] buffer = JsonSerializer.SerializeToUtf8Bytes(content, options);
             context.Response.ContentType = "application/json";
             context.Response.ContentLength64 = buffer.Length;
             context.Response.OutputStream.Write(buffer, 0, buffer.Length);

@@ -19,7 +19,7 @@
         public AirQuality? AirQuality { get; set; }
 
         // Prognoza
-        public List<ForecastDay> ForecastDays { get; set; } = new List<ForecastDay>();
+        public List<ForecastDay> ForecastDays { get; set; } = [];
 
         // Upozorenja
         public List<Alert>? Alerts { get; set; }

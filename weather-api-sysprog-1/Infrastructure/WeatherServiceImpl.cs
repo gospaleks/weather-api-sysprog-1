@@ -27,6 +27,8 @@ namespace weather_api_sysprog_1.Infrastructure
             
             // HTTP GET zahtev
             var response = _httpClient.GetAsync(url).Result;
+
+            // TODO: Obrada gresaka
             
             response.EnsureSuccessStatusCode(); // ovo baca exception
 

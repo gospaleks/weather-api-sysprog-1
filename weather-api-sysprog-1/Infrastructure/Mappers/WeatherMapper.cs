@@ -25,28 +25,28 @@ namespace weather_api_sysprog_1.Infrastructure.Mappers
                 CurrentWindSpeedKph = current.GetDoubleSafe("wind_kph"),
                 CurrentPressureMb = current.GetDoubleSafe("pressure_mb"),
                 AirQuality = current.TryGetProperty("air_quality", out var aq) ? MapAirQuality(aq) : null,
-                ForecastDays = root.GetProperty("forecast").GetProperty("forecastday")
-                    .EnumerateArray()
-                    .Select(f => new ForecastDay
-                    {
-                        Date = DateOnly.FromDateTime(f.GetProperty("date").GetDateTime()),
-                        MaxtempC = f.GetProperty("day").GetDoubleSafe("maxtemp_c"),
-                        MintempC = f.GetProperty("day").GetDoubleSafe("mintemp_c"),
-                        AvgtempC = f.GetProperty("day").GetDoubleSafe("avgtemp_c"),
-                        MaxwindKph = f.GetProperty("day").GetDoubleSafe("maxwind_kph"),
-                        Avghumidity = f.GetProperty("day").GetIntSafe("avghumidity"),
-                        DailyWillItRain = f.GetProperty("day").GetBoolFromInt("daily_will_it_rain"),
-                        DailyChanceOfRain = f.GetProperty("day").GetIntSafe("daily_chance_of_rain"),
-                        DailyWillItSnow = f.GetProperty("day").GetBoolFromInt("daily_will_it_snow"),
-                        DailyChanceOfSnow = f.GetProperty("day").GetIntSafe("daily_chance_of_snow"),
-                        Uv = f.GetProperty("day").GetDoubleSafe("uv"),
-                        Text = f.GetProperty("day").GetProperty("condition").GetStringSafe("text"),
-                        AirQuality = f.GetProperty("day").TryGetProperty("air_quality", out var dayAq) ? MapAirQuality(dayAq) : null
-                    })
-                    .ToList(),
-                Alerts = root.TryGetProperty("alerts", out var alerts) ? 
-                       alerts.GetProperty("alert").EnumerateArray().Select(MapAlert).ToList()
-                       : null
+                ForecastDays = root.GetProperty("forecast").GetProperty("forecastday").EnumerateArray().Select(MapForecastDay).ToList(),
+                Alerts = root.TryGetProperty("alerts", out var alerts) ? alerts.GetProperty("alert").EnumerateArray().Select(MapAlert).ToList() : null
+            };
+        }
+
+        private static ForecastDay MapForecastDay(JsonElement element)
+        {
+            return new ForecastDay
+            {
+                Date = DateOnly.FromDateTime(element.GetProperty("date").GetDateTime()),
+                MaxtempC = element.GetProperty("day").GetDoubleSafe("maxtemp_c"),
+                MintempC = element.GetProperty("day").GetDoubleSafe("mintemp_c"),
+                AvgtempC = element.GetProperty("day").GetDoubleSafe("avgtemp_c"),
+                MaxwindKph = element.GetProperty("day").GetDoubleSafe("maxwind_kph"),
+                Avghumidity = element.GetProperty("day").GetIntSafe("avghumidity"),
+                DailyWillItRain = element.GetProperty("day").GetBoolFromInt("daily_will_it_rain"),
+                DailyChanceOfRain = element.GetProperty("day").GetIntSafe("daily_chance_of_rain"),
+                DailyWillItSnow = element.GetProperty("day").GetBoolFromInt("daily_will_it_snow"),
+                DailyChanceOfSnow = element.GetProperty("day").GetIntSafe("daily_chance_of_snow"),
+                Uv = element.GetProperty("day").GetDoubleSafe("uv"),
+                Text = element.GetProperty("day").GetProperty("condition").GetStringSafe("text"),
+                AirQuality = element.GetProperty("day").TryGetProperty("air_quality", out var dayAq) ? MapAirQuality(dayAq) : null
             };
         }
 
@@ -69,8 +69,6 @@ namespace weather_api_sysprog_1.Infrastructure.Mappers
 
         private static Alert MapAlert(JsonElement element)
         {
-            if (!element.ValueKind.Equals(JsonValueKind.Object)) return null;
-            
             return new Alert
             {
                 Headline = element.GetStringSafe("headline"),
