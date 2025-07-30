@@ -1,6 +1,7 @@
 ﻿using weather_api_sysprog_1.Configuration;
+using weather_api_sysprog_1.Core.Entities;
 using weather_api_sysprog_1.Core.Interfaces;
-using weather_api_sysprog_1.Infrastructure.Logging;
+using weather_api_sysprog_1.Infrastructure.Mappers;
 
 namespace weather_api_sysprog_1.Infrastructure
 {
@@ -14,7 +15,7 @@ namespace weather_api_sysprog_1.Infrastructure
             _settings = settings;
         }
 
-        public string GetWeather(string query)
+        public WeatherForecast GetWeather(string query)
         {
             if (query.StartsWith('?'))
             {
@@ -29,7 +30,8 @@ namespace weather_api_sysprog_1.Infrastructure
             
             response.EnsureSuccessStatusCode(); // ovo baca exception
 
-            return response.Content.ReadAsStringAsync().Result;
+            var json = response.Content.ReadAsStringAsync().Result;
+            return WeatherMapper.MapFromJson(json);
         }
     }
 }

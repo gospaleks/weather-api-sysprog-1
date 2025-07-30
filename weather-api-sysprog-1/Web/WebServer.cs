@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using System.Text.Json;
 using weather_api_sysprog_1.Configuration;
 using weather_api_sysprog_1.Core.Interfaces;
 using weather_api_sysprog_1.Infrastructure.Cache;
@@ -37,6 +38,14 @@ namespace weather_api_sysprog_1.Web
         private void HandleRequest(object? state)
         {
             var context = (HttpListenerContext)state!;
+            
+            string absolutePath = context.Request.Url?.AbsolutePath ?? string.Empty;
+            if (absolutePath.Equals("/favicon.ico", StringComparison.OrdinalIgnoreCase))
+            {
+                context.Response.StatusCode = 404;
+                context.Response.Close();
+                return;
+            }
 
             string query = context.Request.Url?.Query ?? string.Empty;
 
@@ -56,10 +65,13 @@ namespace weather_api_sysprog_1.Web
 
             try
             {
-                var response = _weatherService.GetWeather(query);
-                _cache.Add(query, response);
+                var forecast = _weatherService.GetWeather(query);
+
+                // TODO: dodati u kes
+
                 Logger.Log("Novi odgovor dobijen i keširan.");
-                RespondWithJson(context, response);
+                string json = JsonSerializer.Serialize(forecast);
+                RespondWithJson(context, json);
             }
             catch (Exception ex)
             {
