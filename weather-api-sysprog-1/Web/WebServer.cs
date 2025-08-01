@@ -40,6 +40,7 @@ namespace weather_api_sysprog_1.Web
         private void HandleRequest(object? state)
         {
             var context = (HttpListenerContext)state!;
+            var request = context.Request;
             
             // Preskoci favicon.ico da ne bi logovao bespotrebno gresku
             string absolutePath = context.Request.Url?.AbsolutePath ?? string.Empty;
@@ -50,9 +51,16 @@ namespace weather_api_sysprog_1.Web
                 return;
             }
 
-            string query = context.Request.Url?.Query ?? string.Empty;
+            // Extract query parameters into a dictionary
+            string? city = request.QueryString["q"];
+            string? days = request.QueryString["days"];
+            string? aqi = request.QueryString["aqi"];
+            string? alerts = request.QueryString["alerts"];
 
-            if (string.IsNullOrEmpty(query))
+            // Kreiraj unique key kombinovanjem query parametara
+            string customQuery = $"&q={city ?? ""}&days={days ?? ""}&aqi={aqi ?? ""}&alerts={alerts ?? ""}";
+
+            if (string.IsNullOrEmpty(customQuery))
             {
                 context.Response.StatusCode = 400;
                 RespondWithText(context, "Greška: Niste prosledili upit.");
@@ -60,7 +68,7 @@ namespace weather_api_sysprog_1.Web
                 return;
             }
 
-            if (_cache.TryGet(query, out var cached))
+            if (_cache.TryGet(customQuery, out var cached))
             {
                 Logger.Log("Slanje keširanog odgovora.");
                 RespondWithJson(context, cached);
@@ -69,8 +77,8 @@ namespace weather_api_sysprog_1.Web
 
             try
             {
-                var forecast = _weatherService.GetWeather(query);
-                _cache.Add(query, forecast);
+                var forecast = _weatherService.GetWeather(customQuery);
+                _cache.Add(customQuery, forecast);
 
                 Logger.Log("Novi odgovor dobijen i keširan.");
                 RespondWithJson(context, forecast);

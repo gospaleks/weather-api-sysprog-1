@@ -11,7 +11,7 @@ namespace weather_api_sysprog_1.Configuration
         public string GetListenerPrefix() => $"http://localhost:{Port}/";
 
         public string GetApiUrl(string query) =>
-            $"http://api.weatherapi.com/v1/forecast.json?key={WeatherApiKey}&{query}";
+            $"http://api.weatherapi.com/v1/forecast.json?key={WeatherApiKey}{query}";
 
         public AppSettings()
         {

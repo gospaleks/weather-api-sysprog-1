@@ -3,6 +3,7 @@ using weather_api_sysprog_1.Configuration;
 using weather_api_sysprog_1.Core;
 using weather_api_sysprog_1.Core.Entities;
 using weather_api_sysprog_1.Core.Interfaces;
+using weather_api_sysprog_1.Infrastructure.Logging;
 using weather_api_sysprog_1.Infrastructure.Mappers;
 
 namespace weather_api_sysprog_1.Infrastructure
@@ -19,14 +20,9 @@ namespace weather_api_sysprog_1.Infrastructure
 
         public WeatherForecast GetWeather(string query)
         {
-            if (query.StartsWith('?'))
-            {
-                query = query.Substring(1); // Uklanja '?' ako je prisutan
-            }
-
             // Kreira URL za third party api poziv
             var url = _settings.GetApiUrl(query);
-
+            
             try
             {
                 var response = _httpClient.GetAsync(url).Result;
