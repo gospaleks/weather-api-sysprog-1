@@ -61,6 +61,7 @@ namespace weather_api_sysprog_1.Infrastructure.Cache
 
                 // Izbaci least recently used (LRU) stavku iz kesa
                 string lruKey = accessOrder.First.Value;
+                Logger.Log($"Uklanjanje LRU stavke iz keša: {lruKey}");
                 accessOrder.RemoveFirst();
                 _cache.Remove(lruKey);
             }

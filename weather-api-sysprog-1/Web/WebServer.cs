@@ -2,6 +2,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using weather_api_sysprog_1.Configuration;
+using weather_api_sysprog_1.Core;
 using weather_api_sysprog_1.Core.Interfaces;
 using weather_api_sysprog_1.Infrastructure.Cache;
 using weather_api_sysprog_1.Infrastructure.Logging;
@@ -40,6 +41,7 @@ namespace weather_api_sysprog_1.Web
         {
             var context = (HttpListenerContext)state!;
             
+            // Preskoci favicon.ico da ne bi logovao bespotrebno gresku
             string absolutePath = context.Request.Url?.AbsolutePath ?? string.Empty;
             if (absolutePath.Equals("/favicon.ico", StringComparison.OrdinalIgnoreCase))
             {
@@ -50,10 +52,9 @@ namespace weather_api_sysprog_1.Web
 
             string query = context.Request.Url?.Query ?? string.Empty;
 
-            // TODO: Napravi bolje response-e za greske i nevalidne zahteve sa status kodovima
-
             if (string.IsNullOrEmpty(query))
             {
+                context.Response.StatusCode = 400;
                 RespondWithText(context, "Greška: Niste prosledili upit.");
                 Logger.Log("Zahtev bez query string-a.");
                 return;
@@ -74,10 +75,12 @@ namespace weather_api_sysprog_1.Web
                 Logger.Log("Novi odgovor dobijen i keširan.");
                 RespondWithJson(context, forecast);
             }
-            catch (Exception ex)
+            catch (WeatherApiException ex)
             {
-                Logger.Log("Greška: " + ex.Message);
-                RespondWithText(context, "Došlo je do greške prilikom obrade zahteva.");
+                Logger.Log($"Greška: {ex.ApiMessage ?? ex.Message}");
+                context.Response.StatusCode = ex.StatusCode != 0 ? ex.StatusCode : 500; // 500 Internal server error
+
+                RespondWithText(context, ex.ApiMessage ?? ex.Message);
             }
         }
 
