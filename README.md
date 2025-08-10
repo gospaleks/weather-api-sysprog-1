@@ -1,6 +1,6 @@
 # Sistemsko programiranje - Projekat 1 - Weather API
 
-Realizacija pomoću ThreadPool-a.
+<ins>Realizacija pomoću ThreadPool-a.</ins>
 
 U AppSettings.json se nalaze podešavanja servera. Veličina keša je stavljena na 2 radi testiranja.
 
