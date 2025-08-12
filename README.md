@@ -1,4 +1,6 @@
 # Sistemsko programiranje - Projekat 1 - Weather API
+#### Projekat 2: https://github.com/bxgda/weather-api-sysprog-2
+#### Projekat 3: https://github.com/bxgda/nobelprize-api-sysprog-3
 
 <ins>Realizacija pomoću ThreadPool-a.</ins>
 
