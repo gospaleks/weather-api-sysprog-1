@@ -19,3 +19,10 @@ GET metode. Ukoliko navedena prognoza ne postoji, prikazati grešku klijentu.
 Način funkcionisanja WeatherAPI-a je moguće proučiti na sledećem linku: <br/> https://www.weatherapi.com/docs/
 
 Primer poziva serveru: <br/> http://api.weatherapi.com/v1/forecast.json?key=&q=London&days=5&aqi=yes&alerts=no
+
+##
+
+### Elektronski fakultet Univerziteta u Nišu
+smer: računarstvo i informatika<br/>
+semestar: 6
+
