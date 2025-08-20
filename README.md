@@ -7,7 +7,7 @@
 U AppSettings.json se nalaze podešavanja servera. Veličina keša je stavljena na 2 radi testiranja.
 
 Primer poziva serveru: <br/>
-http://localhost:8080/q=Niš&days=5&aqi=yes&alerts=yes
+http://localhost:8080/?q=Niš&days=5&aqi=yes&alerts=yes
 
 ## Zadatak 15:
 Kreirati Web server koji klijentu omogućava prikaz vremenske prognoze uz pomoć WeatherAPI-
