@@ -41,7 +41,7 @@ namespace weather_api_sysprog_1.Web
         {
             var context = (HttpListenerContext)state!;
             var request = context.Request;
-            
+
             // Preskoci favicon.ico da ne bi logovao bespotrebno gresku
             string absolutePath = context.Request.Url?.AbsolutePath ?? string.Empty;
             if (absolutePath.Equals("/favicon.ico", StringComparison.OrdinalIgnoreCase))
@@ -59,14 +59,6 @@ namespace weather_api_sysprog_1.Web
 
             // Kreiraj unique key kombinovanjem query parametara
             string customQuery = $"&q={city ?? ""}&days={days ?? ""}&aqi={aqi ?? ""}&alerts={alerts ?? ""}";
-
-            if (string.IsNullOrEmpty(customQuery))
-            {
-                context.Response.StatusCode = 400;
-                RespondWithText(context, "Greška: Niste prosledili upit.");
-                Logger.Log("Zahtev bez query string-a.");
-                return;
-            }
 
             if (_cache.TryGet(customQuery, out var cached))
             {
